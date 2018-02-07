@@ -28,14 +28,14 @@ public class RtmpClient {
         public final static int OPEN_SETUP_URL = -2;
 
         /**
-         *  it means there is a problem in connecting to the rtmp server,
-         *  check there is an active network connection,
-         *  check rtmp server is running,
+         * it means there is a problem in connecting to the rtmp server,
+         * check there is an active network connection,
+         * check rtmp server is running,
          */
         public final static int OPEN_CONNECT = -3;
 
         /**
-         *  it means there is a problem in connecting stream
+         * it means there is a problem in connecting stream
          */
         public final static int OPEN_CONNECT_STREAM = -4;
 
@@ -49,8 +49,12 @@ public class RtmpClient {
     }
 
     public void open(String url, boolean isPublishMode) throws RtmpIOException {
+        open(-1, url, isPublishMode);
+    }
+
+    public void open(int socketFd, String url, boolean isPublishMode) throws RtmpIOException {
         rtmpPointer = nativeAlloc();
-        int result = nativeOpen(url, isPublishMode, rtmpPointer);
+        int result = nativeOpenSocket(socketFd, url, isPublishMode, rtmpPointer);
         if (result != OPEN_SUCCESS) {
             rtmpPointer = 0;
             throw new RtmpIOException(result);
@@ -61,37 +65,44 @@ public class RtmpClient {
 
     /**
      * opens the rtmp url
-     * @param url
-     * url of the stream
-     * @param isPublishMode
-     * if this is an publication it is true,
-     * if connection is for getting stream it is false
+     *
+     * @param url           url of the stream
+     * @param isPublishMode if this is an publication it is true,
+     *                      if connection is for getting stream it is false
      * @return return a minus value if it fails
      * returns
-
-     *
+     * <p>
+     * <p>
      * returns {@link #OPEN_SUCCESS} if it is successful, throws RtmpIOException if it is failed
      */
     private native int nativeOpen(String url, boolean isPublishMode, long rtmpPointer);
 
     /**
+     * opens the rtmp url
+     *
+     * @param socketFd      file descriptor id of the open socket
+     * @param url           url of the stream
+     * @param isPublishMode if this is an publication it is true,
+     *                      if connection is for getting stream it is false
+     * @return return a minus value if it fails
+     * returns
+     * <p>
+     * <p>
+     * returns {@link #OPEN_SUCCESS} if it is successful, throws RtmpIOException if it is failed
+     */
+    private native int nativeOpenSocket(int socketFd, String url, boolean isPublishMode, long rtmpPointer);
+
+    /**
      * read data from rtmp connection
      *
-     * @param data
-     * buffer that will be filled
-     * @param offset
-     * offset to read data
-     * @param size
-     * size of the data to be reat
-     * @return
-     * number of bytes to be read
-     *
+     * @param data   buffer that will be filled
+     * @param offset offset to read data
+     * @param size   size of the data to be reat
+     * @return number of bytes to be read
+     * <p>
      * if it returns -1, it means stream is complete
-     *  and close function can be called.
-     *
-     *
-     *  @throws IOException if connection is not opened or connection to server is lost
-     *
+     * and close function can be called.
+     * @throws IOException if connection is not opened or connection to server is lost
      */
     public int read(byte[] data, int offset, int size) throws IOException {
         return nativeRead(data, offset, size, rtmpPointer);
@@ -100,7 +111,6 @@ public class RtmpClient {
     private native int nativeRead(byte[] data, int offset, int size, long rtmpPointer) throws IOException;
 
     /**
-     *
      * @param data
      * @return number of bytes written
      * @throws IOException if connection is not opened or connection to server is lost
@@ -113,22 +123,18 @@ public class RtmpClient {
 
 
     /**
-     * @param pause
-     * if pause is true then stream is going to be paused
-     *
-     * If pause is false, it unpauses the stream and it is ready to to play again
-     *
+     * @param pause if pause is true then stream is going to be paused
+     *              <p>
+     *              If pause is false, it unpauses the stream and it is ready to to play again
      * @return true if it is successfull else returns false
      */
     public boolean pause(boolean pause) {
         return nativePause(pause, rtmpPointer);
     }
+
     private native boolean nativePause(boolean pause, long rtmpPointer);
 
-
-
     /**
-     *
      * @return true if it is connected
      * false if it is not connected
      */
@@ -139,7 +145,6 @@ public class RtmpClient {
     private native boolean nativeIsConnected(long rtmpPointer);
 
     /**
-     *
      * closes the connection. Dont forget to call
      */
     public void close() {

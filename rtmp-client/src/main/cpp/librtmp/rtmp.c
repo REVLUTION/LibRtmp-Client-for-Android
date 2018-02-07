@@ -901,12 +901,18 @@ finish:
 int
 RTMP_Connect0(RTMP *r, struct sockaddr * service)
 {
+    return RTMP_ConnectSocket0(r, service, -1);
+}
+
+int
+RTMP_ConnectSocket0(RTMP *r, struct sockaddr * service, int fd)
+{
   int on = 1;
   r->m_sb.sb_timedout = FALSE;
   r->m_pausing = 0;
   r->m_fDuration = 0.0;
 
-  r->m_sb.sb_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  r->m_sb.sb_socket = fd != -1 ? fd : socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (r->m_sb.sb_socket != -1)
     {
       if (connect(r->m_sb.sb_socket, service, sizeof(struct sockaddr)) < 0)
@@ -1026,6 +1032,12 @@ RTMP_Connect1(RTMP *r, RTMPPacket *cp)
 int
 RTMP_Connect(RTMP *r, RTMPPacket *cp)
 {
+   return RTMP_ConnectSocket(r, cp, -1);
+}
+
+int
+RTMP_ConnectSocket(RTMP *r, RTMPPacket *cp, int fd)
+{
   struct sockaddr_in service;
   if (!r->Link.hostname.av_len)
     return FALSE;
@@ -1046,7 +1058,7 @@ RTMP_Connect(RTMP *r, RTMPPacket *cp)
 	return FALSE;
     }
 
-  if (!RTMP_Connect0(r, (struct sockaddr *)&service))
+  if (!RTMP_ConnectSocket0(r, (struct sockaddr *)&service, fd))
     return FALSE;
 
   r->m_bSendCounter = TRUE;

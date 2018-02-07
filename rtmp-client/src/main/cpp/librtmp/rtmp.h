@@ -314,8 +314,10 @@ extern "C"
 			int dStop, int bLiveStream, long int timeout);
 
   int RTMP_Connect(RTMP *r, RTMPPacket *cp);
+  int RTMP_ConnectSocket(RTMP *r, RTMPPacket *cp, int fd);
   struct sockaddr;
   int RTMP_Connect0(RTMP *r, struct sockaddr *svc);
+  int RTMP_ConnectSocket0(RTMP *r, struct sockaddr *svc, int fd);
   int RTMP_Connect1(RTMP *r, RTMPPacket *cp);
   int RTMP_Serve(RTMP *r);
   int RTMP_TLS_Accept(RTMP *r, void *ctx);
